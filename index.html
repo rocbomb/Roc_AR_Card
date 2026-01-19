@@ -68,16 +68,16 @@
         /* 调试面板 */
         #debug-panel {
             position: fixed;
-            top: 10px;
-            right: 10px;
+            top: 6px;
+            right: 6px;
             background: rgba(0, 0, 0, 0.8);
             color: #00ff00;
-            padding: 10px;
+            padding: 6px 8px;
             border-radius: 5px;
             font-family: monospace;
-            font-size: 12px;
+            font-size: 10px;
             z-index: 100;
-            max-width: 200px;
+            max-width: 150px;
         }
         #debug-panel.hidden {
             display: none;
@@ -85,19 +85,19 @@
         /* 日志面板 */
         #log-panel {
             position: fixed;
-            bottom: 60px;
-            left: 10px;
-            right: 10px;
-            max-height: 200px;
+            bottom: 50px;
+            left: 6px;
+            right: 6px;
+            max-height: 140px;
             background: rgba(0, 0, 0, 0.85);
             color: #00ff00;
-            padding: 10px;
+            padding: 6px 8px;
             border-radius: 5px;
             font-family: monospace;
-            font-size: 11px;
+            font-size: 9px;
             z-index: 100;
             overflow-y: auto;
-            line-height: 1.4;
+            line-height: 1.3;
         }
         #log-panel.hidden {
             display: none;
@@ -128,9 +128,9 @@
     <!-- AR 场景 -->
     <a-scene
         vr-mode-ui="enabled: false"
-        renderer="logarithmicDepthBuffer: true; precision: medium;"
+        renderer="logarithmicDepthBuffer: false; precision: medium; antialias: false;"
         embedded
-        arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
+        arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false; sourceWidth: 640; sourceHeight: 480; displayWidth: 640; displayHeight: 480;"
         gesture-detector
     >
         <!-- 资源预加载 -->
@@ -145,8 +145,8 @@
             type="nft"
             url="./assets/markers/2"
             smooth="true"
-            smoothCount="5"
-            smoothTolerance="0.05"
+            smoothCount="3"
+            smoothTolerance="0.01"
             smoothThreshold="2"
             raycaster="objects: .clickable"
             emitevents="true"
@@ -160,9 +160,11 @@
                 scale="50 50 50"
                 rotation="-90 0 0"
                 class="clickable"
-                animation__float="property: position; to: 0 0.1 0; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine"
+                animation__float="property: position; to: 0 0.1 0; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine; enabled: false"
             >
             </a-entity>
+            <a-box id="marker-helper-2" color="#ff4444" opacity="0.35" depth="150" width="150" height="10" position="0 0 0" visible="false"></a-box>
+            <a-box id="fallback-2" color="#ffffff" opacity="0.6" depth="50" width="50" height="50" position="0 50 0" visible="false"></a-box>
         </a-nft>
 
         <!-- 卡片3 的 NFT Marker -->
@@ -170,19 +172,21 @@
             type="nft"
             url="./assets/markers/3"
             smooth="true"
-            smoothCount="5"
-            smoothTolerance="0.05"
+            smoothCount="3"
+            smoothTolerance="0.01"
             smoothThreshold="2"
         >
             <a-entity
                 id="model-entity-3"
                 gltf-model="#model-3"
                 position="0 0 0"
-                scale="50 50 50"
+                scale="150 150 150"
                 rotation="-90 0 0"
-                animation__float="property: position; to: 0 0.1 0; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine"
+                animation__float="property: position; to: 0 0.1 0; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine; enabled: false"
             >
             </a-entity>
+            <a-box id="marker-helper-3" color="#44ff44" opacity="0.35" depth="150" width="150" height="10" position="0 0 0" visible="false"></a-box>
+            <a-box id="fallback-3" color="#ffffff" opacity="0.6" depth="50" width="50" height="50" position="0 50 0" visible="false"></a-box>
         </a-nft>
 
         <!-- 卡片4 的 NFT Marker -->
@@ -190,23 +194,30 @@
             type="nft"
             url="./assets/markers/4"
             smooth="true"
-            smoothCount="5"
-            smoothTolerance="0.05"
+            smoothCount="3"
+            smoothTolerance="0.01"
             smoothThreshold="2"
         >
             <a-entity
                 id="model-entity-4"
                 gltf-model="#model-4"
                 position="0 0 0"
-                scale="50 50 50"
+                scale="150 150 150"
                 rotation="-90 0 0"
-                animation__float="property: position; to: 0 0.1 0; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine"
+                animation__float="property: position; to: 0 0.1 0; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine; enabled: false"
             >
             </a-entity>
+            <a-box id="marker-helper-4" color="#4444ff" opacity="0.35" depth="150" width="150" height="10" position="0 0 0" visible="false"></a-box>
+            <a-box id="fallback-4" color="#ffffff" opacity="0.6" depth="50" width="50" height="50" position="0 50 0" visible="false"></a-box>
         </a-nft>
 
         <!-- 摄像头 -->
-        <a-entity camera></a-entity>
+        <a-entity id="camera" camera>
+            <a-plane id="hud-debug" color="#ffcc00" opacity="0.7" width="0.15" height="0.08" position="0 0 -0.5" visible="false"></a-plane>
+            <!-- 调试：在摄像头前方固定一个红色小方块，验证3D渲染层是否正常工作 -->
+            <!-- 用户反馈看不到红色方块，但看到了灰色方块（fallback），说明渲染正常但FOV可能有问题，或者被遮挡。既然渲染OK，移除这个干扰项 -->
+            <!-- <a-box id="camera-fix-debug" color="red" depth="0.02" width="0.02" height="0.02" position="0.2 0.2 -0.5" visible="true"></a-box> -->
+        </a-entity>
     </a-scene>
 
     <script>
@@ -222,11 +233,14 @@
             };
             console.log(`%c${prefix} ${msg}`, style[type] || style.info);
             
-            // 同时显示在页面日志面板
             addLogToPanel(`[${tag}] ${msg}`, type);
         }
 
         function addLogToPanel(msg, type) {
+            if (!PERF.logPanelEnabled) return;
+            const now = Date.now();
+            if (now - lastLogPanelTime < PERF.logPanelThrottleMs) return;
+            lastLogPanelTime = now;
             const panel = document.getElementById('log-panel');
             if (!panel) return;
             const line = document.createElement('div');
@@ -234,8 +248,7 @@
             line.style.color = type === 'error' ? '#ff4444' : type === 'warn' ? '#ffaa00' : '#00ff00';
             panel.appendChild(line);
             panel.scrollTop = panel.scrollHeight;
-            // 限制日志数量
-            while (panel.children.length > 50) {
+            while (panel.children.length > PERF.maxLogLines) {
                 panel.removeChild(panel.firstChild);
             }
         }
@@ -243,9 +256,12 @@
         // ========== 配置参数 ==========
         const CONFIG = {
             models: {
-                2: { position: '100 100 0', scale: '150 150 150', rotation: '-90 0 0' },
-                3: { position: '100 100 0', scale: '150 150 150', rotation: '-90 0 0' },
-                4: { position: '100 100 0', scale: '150 150 150', rotation: '-90 0 0' }
+                // 尝试将模型移动到中心 (假设卡片宽高比约为 1.5:1, 且单位为归一化或像素)
+                // 如果之前 targetSize=0.2 合适，说明单位是小数值，那么 position 应该也是小数值
+                // 假设卡片宽度为 1，则中心在 0.5 左右
+                2: { position: '100 150 0', scale: '150 150 150', rotation: '-90 0 0' },
+                3: { position: '100 150 0', scale: '150 150 150', rotation: '-90 0 0' },
+                4: { position: '100 150 0', scale: '150 150 150', rotation: '-90 0 0' }
             },
             tracking: {
                 smooth: true,
@@ -254,6 +270,12 @@
                 smoothThreshold: 5
             },
             debug: true  // 开启调试
+        };
+        const PERF = {
+            logPanelEnabled: true,
+            logPanelThrottleMs: 120,
+            debugPanelThrottleMs: 120,
+            maxLogLines: 30
         };
 
         // ========== 加载状态管理 ==========
@@ -264,12 +286,15 @@
         const debugPanel = document.getElementById('debug-panel');
         const debugDetected = document.getElementById('debug-detected');
         const debugTracking = document.getElementById('debug-tracking');
+        const hudDebug = document.getElementById('hud-debug');
 
         if (CONFIG.debug) {
             debugPanel.classList.remove('hidden');
         }
 
         let detectedMarkers = new Set();
+        let lastLogPanelTime = 0;
+        let lastDebugUpdateTime = 0;
 
         // ========== 场景加载事件 ==========
         const scene = document.querySelector('a-scene');
@@ -307,15 +332,98 @@
             }
         });
 
+        function alignModelToMarker(entityId) {
+            const entity = document.getElementById(entityId);
+            if (!entity) return;
+            
+            // 解析 Marker ID
+            const markerId = entityId.split('-').pop();
+            const config = CONFIG.models[markerId];
+
+            // 尝试获取模型对象 (兼容 gltf-model 和普通 geometry)
+            let mesh = entity.getObject3D('mesh');
+            if (!mesh && entity.object3D.children.length > 0) {
+                // 如果没有注册为 'mesh'，则取第一个子对象（通常是 GLTF 根节点）
+                mesh = entity.object3D;
+            }
+
+            if (!mesh) {
+                log('Center', `${entityId} 模型对象未就绪`, 'warn');
+                return;
+            }
+            
+            mesh.updateMatrixWorld(true);
+            const box = new THREE.Box3().setFromObject(mesh);
+            if (box.isEmpty()) {
+                log('Center', `${entityId} 包围盒为空`, 'warn');
+                return;
+            }
+            
+            // 计算中心点偏移
+            const center = box.getCenter(new THREE.Vector3());
+            const size = box.getSize(new THREE.Vector3());
+            
+            // 读取配置中的位置偏移（如果没有配置，默认为 0 0 0）
+            let targetPos = new THREE.Vector3(0, 0, 0);
+            if (config && config.position) {
+                const parts = config.position.trim().split(/\s+/).map(Number);
+                if (parts.length === 3 && !parts.some(isNaN)) {
+                    targetPos.set(parts[0], parts[1], parts[2]);
+                }
+            }
+
+            // 应用位置偏移
+            // 假设 (0,0,0) 是左下角，我们需要往右上移动到中心
+            entity.object3D.position.copy(targetPos);
+            
+            // 缩放逻辑
+            const maxDim = Math.max(size.x, size.y, size.z);
+            
+            // 目标大小：0.2 (像素/单位)
+            const targetSize = 0.2; 
+                
+            // 如果 maxDim 非常小（例如 < 1），说明模型本身单位是米，需要放大
+            // 如果 maxDim 很大（例如 > 100），说明模型本身单位匹配，不需要太大缩放
+            
+            let scale = 1;
+            if (maxDim > 0) {
+                scale = targetSize / maxDim;
+            }
+            
+            // 限制缩放范围，防止数值爆炸
+            // 将最大缩放限制从 10000 降低到 100，防止模型意外变得过大
+            const clampedScale = Math.min(Math.max(scale, 0.001), 100);
+            
+            entity.object3D.scale.set(clampedScale, clampedScale, clampedScale);
+            
+            // 修正位置：让模型底部位于 z=0 (或 y=0，取决于坐标系)
+            // AR.js NFT 通常 z 是垂直于卡片的轴？不，通常 y 是垂直的，或者 z。
+            // 这里的 entity 有 rotation="-90 0 0"，这意味着原始的 z 轴变成了 y 轴 (垂直于卡片)。
+            // 原始模型的 y 轴变成了 -z 轴 (卡片平面)。
+            // 我们希望模型“站”在卡片上。
+            
+            // 简单的可见性修复：
+            entity.object3D.visible = true;
+            
+            log('Center', `${entityId} 调整完成: Pos=${targetPos.toArray().join(',')}, Scale=${clampedScale.toFixed(2)}`, 'info');
+        }
+
         // ========== 模型实体加载监听 ==========
         ['model-entity-2', 'model-entity-3', 'model-entity-4'].forEach(id => {
             const entity = document.getElementById(id);
             if (entity) {
                 entity.addEventListener('model-loaded', () => {
                     log('Entity', `${id} 模型实体加载成功 ✓`, 'load');
+                    alignModelToMarker(id);
+                    const markerId = id.split('-').pop();
+                    const fallback = document.getElementById(`fallback-${markerId}`);
+                    if (fallback) {
+                        fallback.setAttribute('visible', 'false');
+                    }
                 });
                 entity.addEventListener('model-error', (e) => {
-                    log('Entity', `${id} 模型实体加载失败 ✗: ${e.detail?.message || '未知错误'}`, 'error');
+                    const detailMessage = e && e.detail && e.detail.message ? e.detail.message : '未知错误';
+                    log('Entity', `${id} 模型实体加载失败 ✗: ${detailMessage}`, 'error');
                 });
             }
         });
@@ -360,12 +468,45 @@
                 updateHint();
                 updateDebug();
                 
+                // 打印调试信息：位置和缩放
+                const worldPos = new THREE.Vector3();
+                marker.object3D.getWorldPosition(worldPos);
+                log('Debug', `Marker ${markerId} World Pos: ${worldPos.x.toFixed(2)}, ${worldPos.y.toFixed(2)}, ${worldPos.z.toFixed(2)}`, 'warn');
+                
                 // 检查子模型状态
                 const childEntity = document.getElementById(`model-entity-${markerId}`);
                 if (childEntity) {
-                    const model = childEntity.getObject3D('mesh');
-                    log('Track', `Marker ${markerId} 子模型存在: ${!!model}`, model ? 'info' : 'warn');
+                    childEntity.setAttribute('animation__float', 'enabled: true');
+                    childEntity.object3D.visible = true;
+                    // 不要强制重置 scale，保留 alignModelToMarker 的计算结果
+                    // childEntity.setAttribute('scale', '50 50 50'); 
+                    
+                    // 检查模型是否加载（兼容 GLTF）
+                    const hasModel = childEntity.object3D.children.length > 0;
+                    log('Track', `Marker ${markerId} 子模型存在: ${hasModel}`, hasModel ? 'info' : 'warn');
+                    
+                    const helper = document.getElementById(`marker-helper-${markerId}`);
+                    if (helper) {
+                        // 调试完成，默认隐藏辅助方块，避免与模型冲突
+                        helper.setAttribute('visible', 'false'); 
+                    }
+                    const fallback = document.getElementById(`fallback-${markerId}`);
+                    if (fallback) {
+                        // 既然模型已经加载，强制隐藏 fallback
+                        fallback.setAttribute('visible', 'false');
+                    }
+                    
+                    // 如果模型存在，再次尝试对齐（以防初次加载时未能正确对齐）
+                    if (hasModel) {
+                        alignModelToMarker(`model-entity-${markerId}`);
+                    }
                 }
+                marker.object3D.visible = true;
+                if (hudDebug) {
+                    hudDebug.setAttribute('visible', 'true');
+                    hudDebug.setAttribute('color', '#00ff00'); // 识别成功变绿
+                }
+                forceShowMarker(markerId);
             });
 
             // Marker 丢失
@@ -374,6 +515,21 @@
                 detectedMarkers.delete(markerId);
                 updateHint();
                 updateDebug();
+                const childEntity = document.getElementById(`model-entity-${markerId}`);
+                if (childEntity) {
+                    childEntity.setAttribute('animation__float', 'enabled: false');
+                }
+                const helper = document.getElementById(`marker-helper-${markerId}`);
+                if (helper) {
+                    helper.setAttribute('visible', 'false');
+                }
+                const fallback = document.getElementById(`fallback-${markerId}`);
+                if (fallback) {
+                    fallback.setAttribute('visible', 'false');
+                }
+                if (hudDebug) {
+                    hudDebug.setAttribute('visible', detectedMarkers.size > 0 ? 'true' : 'false');
+                }
             });
         });
 
@@ -392,9 +548,31 @@
         // ========== 调试信息更新 ==========
         function updateDebug() {
             if (!CONFIG.debug) return;
+            const now = Date.now();
+            if (now - lastDebugUpdateTime < PERF.debugPanelThrottleMs) return;
+            lastDebugUpdateTime = now;
             debugDetected.textContent = detectedMarkers.size > 0 ? Array.from(detectedMarkers).join(', ') : '无';
             debugTracking.textContent = detectedMarkers.size > 0 ? '跟踪中' : '未跟踪';
         }
+
+        function forceShowMarker(markerId) {
+            const marker = document.querySelector(`a-nft[url="./assets/markers/${markerId}"]`);
+            if (marker) {
+                marker.setAttribute('visible', 'true');
+                marker.object3D.visible = true;
+                // 不要重置 scale，因为我们在 alignModelToMarker 里可能已经设置过了（如果是直接缩放 marker 的话，但这里我们通常缩放的是子 entity）
+                // 不过为了保险起见，marker 本身应该是 1,1,1
+                if (marker.object3D.scale.x === 0) {
+                     marker.object3D.scale.set(1, 1, 1);
+                }
+            }
+            // 移除强制显示 helper 和 fallback 的逻辑，完全由 markerFound 中的逻辑控制
+        }
+
+        window.toggleHelpers = function(enabled) {
+            const helpers = document.querySelectorAll('[id^="marker-helper-"], [id^="fallback-"]');
+            helpers.forEach(h => h.setAttribute('visible', enabled ? 'true' : 'false'));
+        };
 
         // ========== 模型参数动态调整 ==========
         window.adjustModel = function(modelId, property, value) {
@@ -459,7 +637,8 @@
             // 检查NFT状态
             nftMarkers.forEach((marker, index) => {
                 const markerId = index + 2;
-                log('Check', `NFT ${markerId}: visible=${marker.object3D?.visible}`, 'info');
+                const markerVisible = marker && marker.object3D ? marker.object3D.visible : 'unknown';
+                log('Check', `NFT ${markerId}: visible=${markerVisible}`, 'info');
             });
         };
 
