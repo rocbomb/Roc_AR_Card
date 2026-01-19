@@ -31,8 +31,14 @@ const CONFIG = {
     defaultThreads: 4,
     // 生成参数
     generatorArgs: [
-        '-noConf',      // 跳过确认提示
-        '-level=2',     // 特征密度（0-4，默认2）
+        '-noConf',              // 跳过确认提示
+        '-dpi=72',              // DPI
+        '-level=2',             // 特征密度（0-4，默认2）
+        '-leveli=1',            // 初始特征密度（0-3，默认1）
+        '-sd_thresh=8',         // 标准差阈值
+        '-max_thresh=0.9',      // 最大特征阈值
+        '-min_thresh=0.55',     // 最小特征阈值
+        '-feature_density=70',  // 特征密度乘数
     ]
 };
 

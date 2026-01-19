@@ -82,6 +82,26 @@
         #debug-panel.hidden {
             display: none;
         }
+        /* 日志面板 */
+        #log-panel {
+            position: fixed;
+            bottom: 60px;
+            left: 10px;
+            right: 10px;
+            max-height: 200px;
+            background: rgba(0, 0, 0, 0.85);
+            color: #00ff00;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 11px;
+            z-index: 100;
+            overflow-y: auto;
+            line-height: 1.4;
+        }
+        #log-panel.hidden {
+            display: none;
+        }
     </style>
 </head>
 <body style="margin: 0; overflow: hidden;">
@@ -102,6 +122,9 @@
         <div>跟踪状态: <span id="debug-tracking">未跟踪</span></div>
     </div>
 
+    <!-- 日志面板 -->
+    <div id="log-panel"></div>
+
     <!-- AR 场景 -->
     <a-scene
         vr-mode-ui="enabled: false"
@@ -114,7 +137,7 @@
         <a-assets>
             <a-asset-item id="model-2" src="./assets/models/2.glb"></a-asset-item>
             <a-asset-item id="model-3" src="./assets/models/3.glb"></a-asset-item>
-            <!-- 模型4暂无，后续添加 -->
+            <a-asset-item id="model-4" src="./assets/models/4.glb"></a-asset-item>
         </a-assets>
 
         <!-- 卡片2 的 NFT Marker -->
@@ -122,21 +145,22 @@
             type="nft"
             url="./assets/markers/2"
             smooth="true"
-            smoothCount="10"
-            smoothTolerance="0.01"
-            smoothThreshold="5"
+            smoothCount="5"
+            smoothTolerance="0.05"
+            smoothThreshold="2"
             raycaster="objects: .clickable"
             emitevents="true"
             cursor="fuse: false; rayOrigin: mouse;"
         >
+            <!-- position="0 0 0" 模型在卡片中心，scale调整大小，动画做小范围悬浮 -->
             <a-entity
                 id="model-entity-2"
                 gltf-model="#model-2"
-                position="100 100 0"
-                scale="150 150 150"
+                position="0 0 0"
+                scale="50 50 50"
                 rotation="-90 0 0"
                 class="clickable"
-                animation__float="property: position; to: 100 120 0; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine"
+                animation__float="property: position; to: 0 0.1 0; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine"
             >
             </a-entity>
         </a-nft>
@@ -146,38 +170,38 @@
             type="nft"
             url="./assets/markers/3"
             smooth="true"
-            smoothCount="10"
-            smoothTolerance="0.01"
-            smoothThreshold="5"
+            smoothCount="5"
+            smoothTolerance="0.05"
+            smoothThreshold="2"
         >
             <a-entity
                 id="model-entity-3"
                 gltf-model="#model-3"
-                position="100 100 0"
-                scale="150 150 150"
+                position="0 0 0"
+                scale="50 50 50"
                 rotation="-90 0 0"
-                animation__float="property: position; to: 100 120 0; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine"
+                animation__float="property: position; to: 0 0.1 0; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine"
             >
             </a-entity>
         </a-nft>
 
-        <!-- 卡片4 的 NFT Marker（模型待添加） -->
+        <!-- 卡片4 的 NFT Marker -->
         <a-nft
             type="nft"
             url="./assets/markers/4"
             smooth="true"
-            smoothCount="10"
-            smoothTolerance="0.01"
-            smoothThreshold="5"
+            smoothCount="5"
+            smoothTolerance="0.05"
+            smoothThreshold="2"
         >
             <a-entity
                 id="model-entity-4"
-                position="100 100 0"
-                scale="150 150 150"
+                gltf-model="#model-4"
+                position="0 0 0"
+                scale="50 50 50"
                 rotation="-90 0 0"
+                animation__float="property: position; to: 0 0.1 0; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine"
             >
-                <!-- 暂用占位几何体，待替换为实际模型 -->
-                <a-box color="#4CC3D9" depth="50" height="50" width="50"></a-box>
             </a-entity>
         </a-nft>
 
@@ -186,23 +210,50 @@
     </a-scene>
 
     <script>
+        // ========== 日志工具 ==========
+        function log(tag, msg, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            const prefix = `[${time}][${tag}]`;
+            const style = {
+                info: 'color: #00ff00',
+                warn: 'color: #ffaa00',
+                error: 'color: #ff0000',
+                load: 'color: #00aaff'
+            };
+            console.log(`%c${prefix} ${msg}`, style[type] || style.info);
+            
+            // 同时显示在页面日志面板
+            addLogToPanel(`[${tag}] ${msg}`, type);
+        }
+
+        function addLogToPanel(msg, type) {
+            const panel = document.getElementById('log-panel');
+            if (!panel) return;
+            const line = document.createElement('div');
+            line.textContent = msg;
+            line.style.color = type === 'error' ? '#ff4444' : type === 'warn' ? '#ffaa00' : '#00ff00';
+            panel.appendChild(line);
+            panel.scrollTop = panel.scrollHeight;
+            // 限制日志数量
+            while (panel.children.length > 50) {
+                panel.removeChild(panel.firstChild);
+            }
+        }
+
         // ========== 配置参数 ==========
         const CONFIG = {
-            // 模型参数配置（方便调优）
             models: {
                 2: { position: '100 100 0', scale: '150 150 150', rotation: '-90 0 0' },
                 3: { position: '100 100 0', scale: '150 150 150', rotation: '-90 0 0' },
                 4: { position: '100 100 0', scale: '150 150 150', rotation: '-90 0 0' }
             },
-            // 跟踪优化参数
             tracking: {
                 smooth: true,
-                smoothCount: 10,        // 平滑帧数，值越大越稳定但延迟越高
-                smoothTolerance: 0.01,  // 位置容差
-                smoothThreshold: 5      // 阈值
+                smoothCount: 10,
+                smoothTolerance: 0.01,
+                smoothThreshold: 5
             },
-            // 调试模式
-            debug: false
+            debug: true  // 开启调试
         };
 
         // ========== 加载状态管理 ==========
@@ -214,50 +265,112 @@
         const debugDetected = document.getElementById('debug-detected');
         const debugTracking = document.getElementById('debug-tracking');
 
-        // 调试模式开关
         if (CONFIG.debug) {
             debugPanel.classList.remove('hidden');
         }
 
-        // 跟踪状态
         let detectedMarkers = new Set();
 
         // ========== 场景加载事件 ==========
         const scene = document.querySelector('a-scene');
         
         scene.addEventListener('loaded', () => {
+            log('Scene', '场景已加载', 'load');
             loadingProgress.textContent = '场景已加载';
         });
 
         scene.addEventListener('arjs-video-loaded', () => {
+            log('AR.js', '摄像头已就绪', 'load');
             loadingProgress.textContent = '摄像头已就绪';
+        });
+
+        // ========== 资源加载监听 ==========
+        const assets = document.querySelector('a-assets');
+        if (assets) {
+            assets.addEventListener('loaded', () => {
+                log('Assets', '所有资源预加载完成', 'load');
+            });
+        }
+
+        // 监听每个模型资源
+        ['model-2', 'model-3', 'model-4'].forEach(id => {
+            const asset = document.getElementById(id);
+            if (asset) {
+                asset.addEventListener('loaded', () => {
+                    log('Model', `${id} 加载成功 ✓`, 'load');
+                });
+                asset.addEventListener('error', (e) => {
+                    log('Model', `${id} 加载失败 ✗: ${e.detail || '未知错误'}`, 'error');
+                });
+            } else {
+                log('Model', `${id} 资源元素不存在`, 'warn');
+            }
+        });
+
+        // ========== 模型实体加载监听 ==========
+        ['model-entity-2', 'model-entity-3', 'model-entity-4'].forEach(id => {
+            const entity = document.getElementById(id);
+            if (entity) {
+                entity.addEventListener('model-loaded', () => {
+                    log('Entity', `${id} 模型实体加载成功 ✓`, 'load');
+                });
+                entity.addEventListener('model-error', (e) => {
+                    log('Entity', `${id} 模型实体加载失败 ✗: ${e.detail?.message || '未知错误'}`, 'error');
+                });
+            }
         });
 
         // AR.js 就绪后隐藏加载界面
         window.addEventListener('load', () => {
-            // 给 AR.js 一些初始化时间
+            log('Window', '页面加载完成', 'load');
             setTimeout(() => {
                 loadingOverlay.classList.add('hidden');
+                log('UI', '加载界面已隐藏', 'info');
             }, 3000);
         });
 
         // ========== NFT Marker 事件监听 ==========
         const nftMarkers = document.querySelectorAll('a-nft');
+        log('NFT', `找到 ${nftMarkers.length} 个 NFT Marker 节点`, 'info');
         
         nftMarkers.forEach((marker, index) => {
-            const markerId = index + 2; // 从2开始
+            const markerId = index + 2;
+            const markerUrl = marker.getAttribute('url');
+            log('NFT', `Marker ${markerId}: ${markerUrl}`, 'info');
             
+            // NFT 加载开始
+            marker.addEventListener('arjs-nft-init', () => {
+                log('NFT', `Marker ${markerId} NFT初始化中...`, 'load');
+            });
+            
+            // NFT 加载完成
+            marker.addEventListener('arjs-nft-loaded', () => {
+                log('NFT', `Marker ${markerId} NFT描述文件加载成功 ✓`, 'load');
+            });
+
+            // NFT 加载错误
+            marker.addEventListener('arjs-nft-error', (e) => {
+                log('NFT', `Marker ${markerId} NFT加载失败 ✗: ${e.detail || '检查fset/fset3/iset文件'}`, 'error');
+            });
+
             // Marker 被识别
             marker.addEventListener('markerFound', () => {
-                console.log(`Marker ${markerId} found`);
+                log('Track', `Marker ${markerId} 识别成功 ★`, 'info');
                 detectedMarkers.add(markerId);
                 updateHint();
                 updateDebug();
+                
+                // 检查子模型状态
+                const childEntity = document.getElementById(`model-entity-${markerId}`);
+                if (childEntity) {
+                    const model = childEntity.getObject3D('mesh');
+                    log('Track', `Marker ${markerId} 子模型存在: ${!!model}`, model ? 'info' : 'warn');
+                }
             });
 
             // Marker 丢失
             marker.addEventListener('markerLost', () => {
-                console.log(`Marker ${markerId} lost`);
+                log('Track', `Marker ${markerId} 丢失`, 'warn');
                 detectedMarkers.delete(markerId);
                 updateHint();
                 updateDebug();
@@ -283,23 +396,77 @@
             debugTracking.textContent = detectedMarkers.size > 0 ? '跟踪中' : '未跟踪';
         }
 
-        // ========== 模型参数动态调整（开发调试用） ==========
+        // ========== 模型参数动态调整 ==========
         window.adjustModel = function(modelId, property, value) {
             const entity = document.getElementById(`model-entity-${modelId}`);
             if (entity) {
                 entity.setAttribute(property, value);
-                console.log(`Model ${modelId}: ${property} = ${value}`);
+                log('Adjust', `Model ${modelId}: ${property} = ${value}`, 'info');
             }
         };
 
-        // 使用示例（在控制台调用）：
-        // adjustModel(2, 'position', '100 150 0')
-        // adjustModel(2, 'scale', '200 200 200')
-        // adjustModel(2, 'rotation', '-90 45 0')
+        // ========== 调整模型大小（单位：米） ==========
+        window.scaleModel = function(modelId, s) {
+            const entity = document.getElementById(`model-entity-${modelId}`);
+            if (entity) {
+                entity.setAttribute('scale', `${s} ${s} ${s}`);
+                log('Scale', `Model ${modelId} 缩放到 ${s}`, 'info');
+            }
+        };
 
-        console.log('AR 卡片召唤器已就绪');
-        console.log('调试命令: adjustModel(卡片ID, 属性, 值)');
-        console.log('示例: adjustModel(2, "scale", "200 200 200")');
+        // ========== 调整模型方向 ==========
+        window.rotateModel = function(modelId, x = -90, y = 0, z = 0) {
+            const entity = document.getElementById(`model-entity-${modelId}`);
+            if (entity) {
+                entity.setAttribute('rotation', `${x} ${y} ${z}`);
+                log('Rotate', `Model ${modelId} 旋转到 (${x}, ${y}, ${z})`, 'info');
+            }
+        };
+
+        // ========== 获取当前模型状态 ==========
+        window.getModelInfo = function(modelId) {
+            const entity = document.getElementById(`model-entity-${modelId}`);
+            if (entity) {
+                const pos = entity.getAttribute('position');
+                const rot = entity.getAttribute('rotation');
+                const scale = entity.getAttribute('scale');
+                log('Info', `Model ${modelId}: pos=(${pos.x.toFixed(2)}, ${pos.y.toFixed(2)}, ${pos.z.toFixed(2)}) rot=(${rot.x}, ${rot.y}, ${rot.z}) scale=${scale.x}`, 'info');
+                return { position: pos, rotation: rot, scale: scale };
+            }
+        };
+
+        // ========== 手动检查状态 ==========
+        window.checkStatus = function() {
+            log('Check', '========== 状态检查 ==========', 'info');
+            
+            // 检查资源
+            ['model-2', 'model-3', 'model-4'].forEach(id => {
+                const asset = document.getElementById(id);
+                log('Check', `资源 ${id}: ${asset ? '存在' : '不存在'}`, asset ? 'info' : 'error');
+            });
+            
+            // 检查模型实体
+            ['model-entity-2', 'model-entity-3', 'model-entity-4'].forEach(id => {
+                const entity = document.getElementById(id);
+                if (entity) {
+                    const mesh = entity.getObject3D('mesh');
+                    log('Check', `实体 ${id}: mesh=${!!mesh}`, mesh ? 'info' : 'warn');
+                } else {
+                    log('Check', `实体 ${id}: 不存在`, 'error');
+                }
+            });
+            
+            // 检查NFT状态
+            nftMarkers.forEach((marker, index) => {
+                const markerId = index + 2;
+                log('Check', `NFT ${markerId}: visible=${marker.object3D?.visible}`, 'info');
+            });
+        };
+
+        log('Init', 'AR 卡片召唤器初始化', 'info');
+        log('Init', '控制台命令: checkStatus() 查看状态', 'info');
+        log('Init', '控制台命令: scaleModel(id, size) 调整大小', 'info');
+        log('Init', '控制台命令: rotateModel(id, x, y, z) 调整方向', 'info');
     </script>
 </body>
 </html>
